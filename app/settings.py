@@ -37,6 +37,9 @@ REST_FRAMEWORK = {
 # Application definition
 
 INSTALLED_APPS = [
+    'djoser',
+    'rest_framework',
+    'rest_framework_simplejwt',
     'tasks.apps.TasksConfig',
     'dabase.apps.DabaseConfig',
     'django.contrib.admin',
