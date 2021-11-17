@@ -28,25 +28,17 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ),
-}
-
 # Application definition
 
 INSTALLED_APPS = [
+    'tasks.apps.TasksConfig',
     'dabase.apps.DabaseConfig',
     'django.contrib.admin',
     'django.contrib.auth',
-    'django.contrib.staticfiles',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'djoser',
-    'rest_framework',
-    'rest_framework_simplejwt',
+    'django.contrib.staticfiles',
 ]
 
 MIDDLEWARE = [

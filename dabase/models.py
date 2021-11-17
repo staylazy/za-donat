@@ -21,13 +21,4 @@ class UserProfile(models.Model):
         ) 
     
     def __str__(self) -> str:
-        return self.firstname + self.lastname + self.family_code + self.role
-
-
-class Task(models.Model):
-    task_text = models.CharField(max_length=200)
-    child = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='child', default=UserProfile) #null=True)#, default=Child)
-    parent = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='parent_task',default=UserProfile) #null=True)#, default=Parent)
-
-    def __str__(self):
-        return self.task_text
+        return self.firstname
