@@ -25,5 +25,5 @@ urlpatterns = [
     path('auth/', include('djoser.urls.jwt')),
 
     # Path to account's app endpoints.
-    path("api/accounts/",include("accounts.urls"))
+    path("api/dabase/",include("dabase.urls"))
 ]

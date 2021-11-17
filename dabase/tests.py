@@ -2,7 +2,7 @@ from django.urls import reverse
 from rest_framework.test import APITestCase
 from rest_framework import status
 from django.contrib.auth.models import User
-from .models import userProfile
+from .models import UserProfile
 
 # test the user registration endpoint
 class RegistrationTestCase(APITestCase):
