@@ -4,7 +4,7 @@ import requests
 # except:
 #     print(requests.get("http://127.0.0.1:5000/api/token", auth=('sam', 'python')).text)
 # print(token)
-# print(requests.get("http://127.0.0.1:5000/api/resource", headers={'Authorization': 'access_token eyJhbGciOiJIUzUxMiIsImlhdCI6MTYzNzU5NjM2MSwiZXhwIjoxNjM3NTk2OTYxfQ.eyJpZCI6MX0.nBRX_fLJYn7hQ8ihb8MgLQj406ReRa_RYd7MtrNEODrO8RWAGGAKMB-HeBt2sWKfxcV6PbKoiE0B00xt4YHziw'}))
+# 
 # print(requests.get("http://127.0.0.1:5000/api/resource", auth=('eyJhbGciOiJIUzUxMiIsImlhdCI6MTYzNzU5NjM2MSwiZXhwIjoxNjM3NTk2OTYxfQ.eyJpZCI6MX0.nBRX_fLJYn7hQ8ihb8MgLQj406ReRa_RYd7MtrNEODrO8RWAGGAKMB-HeBt2sWKfxcV6PbKoiE0B00xt4YHziw', 'unused')).text)
 
 

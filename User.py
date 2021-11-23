@@ -8,9 +8,8 @@ class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(32), index=True)
-    password_hash = db.Column(db.String(64))
-    task_id = db.Column(db.Integer, db.ForeignKey('task.id'))
-    tt = relationship("Task", back_populates="user")
+    password_hash = db.Column(db.String(64)) 
+    tt = relationship("Task", uselist=False, back_populates="uu")
 
     def hash_password(self, password):
         self.password_hash = pwd_context.encrypt(password)

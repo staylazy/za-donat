@@ -3,8 +3,8 @@ import os
 from flask import Flask, abort, request, jsonify, g, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_httpauth import HTTPBasicAuth
-from User import User
-from Task import Task
+from user import User
+from task import Task
 # from passlib.apps import custom_app_context as pwd_context
 # from itsdangerous import (TimedJSONWebSignatureSerializer
 #                           as Serializer, BadSignature, SignatureExpired)
@@ -31,6 +31,24 @@ def verify_password(username_or_token, password):
     g.user = user
     return True
 
+@app.route('/api/post_task', methods=['POST'])
+def post_task():
+    strtask = request.json.get('task')
+    username = request.json.get('username')
+    user = User.query.filter_by(username=username).first()
+    task = Task(task_text=strtask, user_id=user.id)
+    db.session.add(task)
+    db.session.commit()
+    return jsonify({"resp":"resp"})
+
+@app.route('api/get_task', methods=['GET'])
+def get_task():
+    username = request.json.get('username')
+    user = User.query.filter_by(username=username).first()
+    user_idd = user.id
+    tasks = Task.query.filter_by(user_id=user_idd).all()
+    return jsonify(tasks)
+    
 
 @app.route('/api/users', methods=['POST'])
 def new_user():
