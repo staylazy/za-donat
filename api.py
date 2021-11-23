@@ -7,7 +7,6 @@ from sqlalchemy.orm import relationship
 from passlib.apps import custom_app_context as pwd_context
 from itsdangerous import (TimedJSONWebSignatureSerializer
                           as Serializer, BadSignature, SignatureExpired)
-from sqlalchemy_serializer import SerializerMixin
 
 # initialization
 app = Flask(__name__)
@@ -25,7 +24,6 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(32), index=True)
     password_hash = db.Column(db.String(64)) 
-    # tt = relationship("Task", uselist=False, backref="uu", primaryjoin="User.id == Task.user_id")
     tasks = db.relationship('Task', backref='users',
                                 lazy='dynamic')
 
@@ -52,12 +50,10 @@ class User(db.Model):
         user = User.query.get(data['id'])
         return user
 
-class Task(db.Model, SerializerMixin):
+class Task(db.Model):
     __tablename__ = 'task'
     id = db.Column(db.Integer, primary_key=True)
     task_text = db.Column(db.String(150), index=True) 
-    #user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    #uu = relationship("User", uselist=False, backref="tt")
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
 @auth.verify_password
@@ -71,6 +67,11 @@ def verify_password(username_or_token, password):
             return False
     g.user = user
     return True
+
+@app.route('/')
+def hi():
+    return jsonify({"a":"bebra"})
+
 
 @app.route('/api/post_task', methods=['POST'])
 @auth.login_required
@@ -90,7 +91,6 @@ def get_task():
     user = User.query.filter_by(username=username).first()
     user_idd = user.id
     tasks = Task.query.filter_by(user_id=user_idd).all()
-    #print(tasks[0].task_text)
     jsonretcal = {username: []}
     for i in tasks:
         jsonretcal.get(username).append(i.task_text)
