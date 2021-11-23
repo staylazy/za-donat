@@ -7,12 +7,14 @@ from sqlalchemy.orm import relationship
 from passlib.apps import custom_app_context as pwd_context
 from itsdangerous import (TimedJSONWebSignatureSerializer
                           as Serializer, BadSignature, SignatureExpired)
+from sqlalchemy_serializer import SerializerMixin
 
 # initialization
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'the quick brown fox jumps over the lazy dog'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
+# app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # extensions
 db = SQLAlchemy(app)
@@ -23,7 +25,10 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(32), index=True)
     password_hash = db.Column(db.String(64)) 
-    tt = relationship("Task", uselist=False, back_populates="uu")
+    # tt = relationship("Task", uselist=False, backref="uu", primaryjoin="User.id == Task.user_id")
+    tasks = db.relationship('Task', backref='users',
+                                lazy='dynamic')
+
 
     def hash_password(self, password):
         self.password_hash = pwd_context.encrypt(password)
@@ -47,13 +52,13 @@ class User(db.Model):
         user = User.query.get(data['id'])
         return user
 
-
-class Task(db.Model):
-    __tablename__ = 'users'
+class Task(db.Model, SerializerMixin):
+    __tablename__ = 'task'
     id = db.Column(db.Integer, primary_key=True)
     task_text = db.Column(db.String(150), index=True) 
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    uu = relationship("User", uselist=False, back_populates="tt")
+    #user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    #uu = relationship("User", uselist=False, backref="tt")
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
 @auth.verify_password
 def verify_password(username_or_token, password):
@@ -68,6 +73,7 @@ def verify_password(username_or_token, password):
     return True
 
 @app.route('/api/post_task', methods=['POST'])
+@auth.login_required
 def post_task():
     strtask = request.json.get('task')
     username = request.json.get('username')
@@ -77,13 +83,18 @@ def post_task():
     db.session.commit()
     return jsonify({"resp":"resp"})
 
-@app.route('api/get_task', methods=['GET'])
+@app.route('/api/get_task', methods=['GET'])
+@auth.login_required
 def get_task():
     username = request.json.get('username')
     user = User.query.filter_by(username=username).first()
     user_idd = user.id
     tasks = Task.query.filter_by(user_id=user_idd).all()
-    return jsonify(tasks)
+    #print(tasks[0].task_text)
+    jsonretcal = {username: []}
+    for i in tasks:
+        jsonretcal.get(username).append(i.task_text)
+    return jsonify(jsonretcal)
     
 
 @app.route('/api/users', methods=['POST'])
