@@ -23,10 +23,12 @@ class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(32), index=True)
+    role = db.Column(db.String(32))
+    parents = db.Column(db.String(256), default="None")
+    points = db.Column(db.Integer, default=0)
     password_hash = db.Column(db.String(64)) 
     tasks = db.relationship('Task', backref='users',
                                 lazy='dynamic')
-
 
     def hash_password(self, password):
         self.password_hash = pwd_context.encrypt(password)
@@ -53,7 +55,8 @@ class User(db.Model):
 class Task(db.Model):
     __tablename__ = 'task'
     id = db.Column(db.Integer, primary_key=True)
-    task_text = db.Column(db.String(150), index=True) 
+    task_text = db.Column(db.String(150), index=True)
+    points = db.Column(db.Integer, default=0)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
 @auth.verify_password
@@ -95,6 +98,15 @@ def get_task():
     for i in tasks:
         jsonretcal.get(username).append(i.task_text)
     return jsonify(jsonretcal)
+
+@app.route('/api/del_task', methods=['POST'])
+@auth.login_required
+def del_task():
+    strtask = request.json.get('task')
+    task = Task.query.filter_by(task_text=strtask, user_id=g.user.id).first()
+    db.session.delete(task)
+    db.session.commit()
+    return jsonify({"data":"task deleted"})
     
 
 @app.route('/api/users', methods=['POST'])
@@ -124,8 +136,8 @@ def get_user(id):
 @app.route('/api/token')
 @auth.login_required
 def get_auth_token():
-    token = g.user.generate_auth_token(600)
-    return jsonify({'token': token.decode('ascii'), 'duration': 600})
+    token = g.user.generate_auth_token(86400)
+    return jsonify({'token': token.decode('ascii'), 'duration': 86400})
 
 
 @app.route('/api/resource')
