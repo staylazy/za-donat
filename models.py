@@ -9,7 +9,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(32), index=True)
     role = db.Column(db.String(32))
-    parents = db.Column(db.String(256), default="None")
+    childs = db.Column(db.String(256), default="None")
     points = db.Column(db.Integer, default=0)
     password_hash = db.Column(db.String(64)) 
     tasks = db.relationship('Task', backref='users',
