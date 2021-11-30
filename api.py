@@ -11,26 +11,56 @@ def post_task():
     # записывать исполнителям и принимать исполнителей ?
     strtask = request.json.get('task')
     username = request.json.get('username')
+    children = request.json.get('children')
     user = User.query.filter_by(username=username).first()
-    task = Task(task_text=strtask, user_id=user.id)
-    db.session.add(task)
-    db.session.commit()
+    if user.role == 'parent' and children != 'all':
+        for child in children:
+            child_user = User.query.filter_by(username=child).first()
+            task = Task(task_text=strtask, user_id=child_user.id)
+            db.session.add(task)
+            db.session.commit()
+    elif user.role == 'parent' and children == 'all':
+        children_list = user.children.split(' ')
+        for child in children_list:
+            child_user = User.query.filter_by(username=child).first()
+            task = Task(task_text=strtask, user_id=child_user.id)
+            db.session.add(task)
+            db.session.commit()
+    else: 
+        return jsonify({"data":"дети не могут добавлять таск"}) 
     return jsonify({"resp":"resp"})
 
 @app.route('/api/get_tasks', methods=['GET'])
 @auth.login_required
 def get_task():
-    # проверить роль ?
     # если спрашиваем таски у родителя то перебираем все таски детей из поля и возвращаем не одинаковые
     # если ребенок то просто достать по связи 
     username = request.json.get('username')
     user = User.query.filter_by(username=username).first()
-    user_idd = user.id
-    tasks = Task.query.filter_by(user_id=user_idd).all()
-    jsonretcal = {username: []}
-    for i in tasks:
-        jsonretcal.get(username).append(i.task_text)
-    return jsonify(jsonretcal)
+    ret_tasks = set()
+    if user.role == 'parent':
+        for child in user.children.split(' '):
+            user_child = User.query.filter_by(username=child).first()
+            child_tasks = Task.query.filter_by(user_id=user_child.id).all()
+            for t in child_tasks:
+                ret_tasks.add(t.task_text)
+    else:
+        tasks = Task.query.filter_by(user_id=user.id).all()
+        for t in tasks:
+            ret_tasks.add(t.task_text)
+    return jsonify({"tasks": list(ret_tasks)})
+
+@app.route('/api/get_children', methods=['GET'])
+@auth.login_required
+def get_children():
+    if g.user.role == 'child':
+        return jsonify({"data":"вы ребенок"})
+    else:
+        children = []
+        for child in g.user.children.split(' '):
+            children.append(child)
+        return jsonify({"children":children})
+
 
 @app.route('/api/del_task', methods=['POST'])
 @auth.login_required
@@ -40,9 +70,9 @@ def del_task():
     username_del = request.json.get('username')
     user = User.query.filter_by(username=username_del).first()
     if user.role == 'parent':
-        childs_list = user.childs
-        childs_list = childs_list.split(' ')
-        for child in childs_list:
+        children_list = user.children
+        children_list = children_list.split(' ')
+        for child in children_list:
             child_user = User.query.filter_by(username=child).first()
             task = Task.query.filter_by(task_text=strtask, user_id=child_user.id).first()
             db.session.delete(task)
@@ -53,7 +83,7 @@ def del_task():
     return jsonify({"data":"task deleted"})
     
 # регистрация пользователя 
-@app.route('/api/users', methods=['POST'])
+@app.route('/api/register', methods=['POST'])
 def new_user():
     username = request.json.get('username')
     password = request.json.get('password')
@@ -70,11 +100,25 @@ def new_user():
             {'Location': url_for('get_user', id=user.id, _external=True)})
 
 
-@app.route('/api/add_childs', methods=['POST'])
+@app.route('/api/add_children', methods=['POST'])
 @auth.login_required
-def add_childs():
-    db.session.query(User).filter(User.id == g.user.id).\
-        update({User.childs: request.json.get('childs')})
+def add_children():
+    # удаление ??
+    # добавление к существующим
+    if g.user.role == 'child':
+        return jsonify({"response": "у детей нет детей"})
+    else:
+        children = g.user.children.split(' ')
+        try:
+            children.remove("None")
+        except:
+            pass
+        new_children = request.json.get('children')
+        for child in new_children:
+            children.append(child)
+        children = " ".join(child for child in children)
+        db.session.query(User).filter(User.id == g.user.id).\
+            update({User.children: children})
     return jsonify({"response":"true"})
 
 
@@ -97,7 +141,7 @@ def get_user(id):
     if not user:
         abort(400)
     return jsonify({'username': user.username,
-                    'chids': user.childs})
+                    'children': user.children})
 
 
 # @app.route('/api/token')
