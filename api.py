@@ -39,7 +39,7 @@ def get_task():
     user = User.query.filter_by(username=username).first()
     ret_tasks = set()
     if user.role == 'parent':
-        if user.children != None:
+        if user.children != "None":
             for child in user.children.split(' '):
                 user_child = User.query.filter_by(username=child).first()
                 child_tasks = Task.query.filter_by(user_id=user_child.id).all()
