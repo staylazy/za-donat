@@ -39,12 +39,15 @@ def get_task():
     user = User.query.filter_by(username=username).first()
     ret_tasks = set()
     if user.role == 'parent':
-        for child in user.children.split(' '):
-            user_child = User.query.filter_by(username=child).first()
-            child_tasks = Task.query.filter_by(user_id=user_child.id).all()
-            for t in child_tasks:
-                ret_tasks.add(t.task_text)
-        return jsonify({"tasks": list(ret_tasks)})
+        if user.children != None:
+            for child in user.children.split(' '):
+                user_child = User.query.filter_by(username=child).first()
+                child_tasks = Task.query.filter_by(user_id=user_child.id).all()
+                for t in child_tasks:
+                    ret_tasks.add(t.task_text)
+            return jsonify({"tasks": list(ret_tasks)})
+        else:
+            return jsonify({"data": "no kids"})
     elif user.role == 'child':
         tasks = Task.query.filter_by(user_id=user.id).all()
         for t in tasks:
