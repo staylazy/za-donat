@@ -44,7 +44,7 @@ def get_task():
             child_tasks = Task.query.filter_by(user_id=user_child.id).all()
             for t in child_tasks:
                 ret_tasks.add(t.task_text)
-    else:
+    elif user.role == 'child':
         tasks = Task.query.filter_by(user_id=user.id).all()
         for t in tasks:
             ret_tasks.add(t.task_text)
