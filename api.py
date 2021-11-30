@@ -44,11 +44,13 @@ def get_task():
             child_tasks = Task.query.filter_by(user_id=user_child.id).all()
             for t in child_tasks:
                 ret_tasks.add(t.task_text)
+        return jsonify({"tasks": list(ret_tasks)})
     elif user.role == 'child':
         tasks = Task.query.filter_by(user_id=user.id).all()
         for t in tasks:
             ret_tasks.add(t.task_text)
-    return jsonify({"tasks": list(ret_tasks)})
+        return jsonify({"tasks": list(ret_tasks)})
+    return jsonify({"tasks":"none"})
 
 @app.route('/api/get_children', methods=['GET'])
 @auth.login_required
